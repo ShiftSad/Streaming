@@ -1,5 +1,6 @@
 package codes.shiftmc.streaming;
 
+import codes.shiftmc.streaming.client.CameraClient;
 import codes.shiftmc.streaming.renderer.particle.ParticleImage;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -27,7 +28,16 @@ public class Server {
         });
 
         // Start the streaming process
-        new LocalClient(new ParticleImage(
+//        new LocalClient(new ParticleImage(
+//                new Vec(0, 42, 10),
+//                instanceContainer,
+//                120,
+//                67,
+//                1,
+//                0.2f
+//        ));
+
+        new CameraClient(new ParticleImage(
                 new Vec(0, 42, 10),
                 instanceContainer,
                 120,

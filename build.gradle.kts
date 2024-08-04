@@ -10,6 +10,8 @@ repositories {
 dependencies {
     implementation("net.minestom:minestom-snapshots:7b180172ce")
     implementation("ch.qos.logback:logback-classic:1.5.6")
+
+    implementation("org.bytedeco:javacv-platform:1.5.10")
 }
 
 tasks.jar {

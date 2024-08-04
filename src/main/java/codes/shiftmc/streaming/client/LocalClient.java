@@ -1,7 +1,6 @@
-package codes.shiftmc.streaming;
+package codes.shiftmc.streaming.client;
 
 
-import codes.shiftmc.streaming.client.Clients;
 import codes.shiftmc.streaming.renderer.Renderers;
 
 import java.awt.*;
