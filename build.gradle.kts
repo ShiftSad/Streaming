@@ -1,5 +1,6 @@
 plugins {
     id("io.github.goooler.shadow") version "8.1.7"
+    id("org.jetbrains.kotlin.jvm") version "2.0.0"
     id("java")
 }
 
@@ -12,6 +13,9 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.6")
 
     implementation("org.bytedeco:javacv-platform:1.5.10")
+
+    implementation("org.tensorflow:tensorflow-lite:2.5.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.5.0")
 }
 
 tasks.jar {
@@ -19,3 +23,5 @@ tasks.jar {
         attributes["Main-Class"] = "codes.shiftmc.streaming.Server"
     }
 }
+
+apply(from = "download.gradle.kts")
