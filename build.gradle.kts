@@ -13,9 +13,6 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.6")
 
     implementation("org.bytedeco:javacv-platform:1.5.10")
-
-    implementation("org.tensorflow:tensorflow-lite:2.5.0")
-    implementation("org.tensorflow:tensorflow-lite-gpu:2.5.0")
 }
 
 tasks.jar {
