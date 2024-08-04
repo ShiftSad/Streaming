@@ -23,5 +23,3 @@ tasks.jar {
         attributes["Main-Class"] = "codes.shiftmc.streaming.Server"
     }
 }
-
-apply(from = "download.gradle.kts")
