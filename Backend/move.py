@@ -1,3 +1,4 @@
+import subprocess
 import time
 
 import cv2
@@ -53,15 +54,38 @@ def movenet(input_image):
     return keypoints_with_scores
 
 
-print("Model loaded")
-current_time_millis = int(round(time.time() * 1000))
-
 # Initialize the webcam
-cap = cv2.VideoCapture(1)
+ip_camera_url = "http://192.168.0.102:4747/video?640x480"
+cap = cv2.VideoCapture(ip_camera_url)
+
+if not cap.isOpened():
+    print(f"Error: Unable to open video stream from {ip_camera_url}")
+    exit()
+
+# Setup ffmpeg process
+rtmp_url = "rtmp://177.3.74.79:1935/banana"
+ffmpeg_cmd = [
+    'ffmpeg',
+    '-y',
+    '-f', 'rawvideo',
+    '-vcodec', 'rawvideo',
+    '-pix_fmt', 'bgr24',
+    '-s', f"{input_size}x{input_size}",
+    '-r', '30',
+    '-i', '-',
+    '-c:v', 'libx264',
+    '-pix_fmt', 'yuv420p',
+    '-preset', 'ultrafast',
+    '-tune', 'zerolatency',
+    '-f', 'flv',
+    rtmp_url
+]
+process = subprocess.Popen(ffmpeg_cmd, stdin=subprocess.PIPE)
 
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
+        print("Error: Unable to read frame from video stream")
         break
 
     # Resize and preprocess the frame
@@ -78,11 +102,11 @@ while cap.isOpened():
         if confidence > 0.5:
             cv2.circle(frame, (int(x * frame.shape[1]), int(y * frame.shape[0])), 5, (0, 255, 0), -1)
 
-    # Display the frame
-    cv2.imshow('Movenet', frame)
+    frame_resized = cv2.resize(frame, (input_size, input_size))
 
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    # Display the frame
+    process.stdin.write(frame_resized.tobytes())
 
 cap.release()
-cv2.destroyAllWindows()
+process.stdin.close()
+process.wait()
