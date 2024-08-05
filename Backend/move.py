@@ -1,9 +1,22 @@
+import time
+
+import cv2
 import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
-from matplotlib import pyplot as plt
 
-from visualization import draw_prediction_on_image
+# Check if GPU is available and set memory growth
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(f"{len(gpus)} Physical GPUs, {len(logical_gpus)} Logical GPUs")
+    except RuntimeError as e:
+        print(e)
+else:
+    print("No GPU!")
 
 model_name = "movenet_thunder"
 
@@ -40,26 +53,36 @@ def movenet(input_image):
     return keypoints_with_scores
 
 
-# Load the input image.
-image_path = 'yoga.jpg'
-image = tf.io.read_file(image_path)
-image = tf.image.decode_jpeg(image)
+print("Model loaded")
+current_time_millis = int(round(time.time() * 1000))
 
-# Resize and pad the image to keep the aspect ratio and fit the expected size.
-input_image = tf.expand_dims(image, axis=0)
-input_image = tf.image.resize_with_pad(input_image, input_size, input_size)
+# Initialize the webcam
+cap = cv2.VideoCapture(1)
 
-# Run model inference.
-keypoints_with_scores = movenet(input_image)
+while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-# Visualize the predictions with image.
-display_image = tf.expand_dims(image, axis=0)
-display_image = tf.cast(tf.image.resize_with_pad(
-    display_image, 1280, 1280), dtype=tf.int32)
-output_overlay = draw_prediction_on_image(
-    np.squeeze(display_image.numpy(), axis=0), keypoints_with_scores)
+    # Resize and preprocess the frame
+    input_image = cv2.resize(frame, (input_size, input_size))
+    input_image = np.expand_dims(input_image, axis=0)
+    input_image = tf.convert_to_tensor(input_image, dtype=tf.float32)
 
-plt.figure(figsize=(5, 5))
-plt.imshow(output_overlay)
-_ = plt.axis('off')
-plt.show()
+    # Run the model
+    keypoints_with_scores = movenet(input_image)
+
+    # Draw keypoints on the frame
+    for keypoint in keypoints_with_scores[0, 0, :, :]:
+        y, x, confidence = keypoint
+        if confidence > 0.5:
+            cv2.circle(frame, (int(x * frame.shape[1]), int(y * frame.shape[0])), 5, (0, 255, 0), -1)
+
+    # Display the frame
+    cv2.imshow('Movenet', frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
