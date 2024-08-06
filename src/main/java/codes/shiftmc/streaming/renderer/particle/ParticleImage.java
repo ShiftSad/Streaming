@@ -4,11 +4,12 @@ import codes.shiftmc.streaming.renderer.Renderers;
 import net.minestom.server.color.Color;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.Instance;
+import net.minestom.server.network.packet.server.play.BundlePacket;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
-import net.minestom.server.utils.PacketUtils;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ParticleImage implements Renderers {
@@ -61,9 +62,24 @@ public class ParticleImage implements Renderers {
                 .map(particle -> particle.createPacket(pos))
                 .toArray(ParticlePacket[]::new);
 
-        for (ParticlePacket packet : packets) {
-            PacketUtils.sendGroupedPacket(instance.getPlayers(), packet);
+        var packetChunks = splitPackets(packets, 4000);
+        for (var chunk : packetChunks) {
+            var bundlePacket = new BundlePacket();
+            instance.sendGroupedPacket(bundlePacket);
+            for (ParticlePacket packet : chunk) {
+                instance.sendGroupedPacket(packet);
+            }
+            instance.sendGroupedPacket(bundlePacket);
         }
+    }
+
+    private List<ParticlePacket[]> splitPackets(ParticlePacket[] packets, int maxSize) {
+        List<ParticlePacket[]> packetChunks = new ArrayList<>();
+        for (int i = 0; i < packets.length; i += maxSize) {
+            int end = Math.min(packets.length, i + maxSize);
+            packetChunks.add(Arrays.copyOfRange(packets, i, end));
+        }
+        return packetChunks;
     }
 
     private BufferedImage resize(BufferedImage image) {
