@@ -13,6 +13,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.6")
 
     implementation("org.bytedeco:javacv-platform:1.5.10")
+
+    implementation("com.corundumstudio.socketio:netty-socketio:2.0.11")
 }
 
 tasks.jar {

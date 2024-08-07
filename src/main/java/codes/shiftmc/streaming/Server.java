@@ -27,24 +27,7 @@ public class Server {
             player.setRespawnPoint(new Pos(0, 42, 0));
         });
 
-        // Start the streaming process
-//        new LocalClient(new ParticleImage(
-//                new Vec(0, 42, 10),
-//                instanceContainer,
-//                120,
-//                67,
-//                1,
-//                0.2f
-//        ));
 
-        new CameraClient(new ParticleImage(
-                new Vec(0, 42, 10),
-                instanceContainer,
-                120,
-                67,
-                1,
-                0.2f
-        ));
 
         server.start("0.0.0.0", 25565);
     }
