@@ -28,7 +28,7 @@ public class CameraClient implements Clients {
 
         try {
             grabber.start();
-            scheduler.scheduleAtFixedRate(() -> frame(grabber, converter), 0, 100, MILLISECONDS);
+            scheduler.scheduleAtFixedRate(() -> frame(grabber, converter), 0, 50, MILLISECONDS);
         } catch (FrameGrabber.Exception e) {
             throw new RuntimeException(e);
         }
