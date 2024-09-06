@@ -1,19 +1,11 @@
 package codes.shiftmc.streaming.renderer;
 
-import net.minestom.server.component.DataComponent;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.Player;
-import net.minestom.server.event.instance.AddEntityToInstanceEvent;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.item.ItemComponent;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
 import net.minestom.server.map.MapColors;
 import net.minestom.server.map.framebuffers.DirectFramebuffer;
-import net.minestom.server.map.framebuffers.LargeDirectFramebuffer;
 import net.minestom.server.network.packet.server.play.BundlePacket;
 import net.minestom.server.network.packet.server.play.MapDataPacket;
-import net.minestom.server.tag.Tag;
 
 import java.awt.image.BufferedImage;
 
@@ -47,9 +39,11 @@ public class MapRenderer implements Renderers {
         }
     }
 
+    int limit = 0;
+
     @Override
     public void render(BufferedImage image) {
-        // Bundle packets
+        if (limit++ % 20 != 0) return; // Limit framerate
         instance.sendGroupedPacket(new BundlePacket());
 
         // Break image in 128
@@ -74,7 +68,6 @@ public class MapRenderer implements Renderers {
                 instance.sendGroupedPacket(mapDataPacket);
             }
         }
-
         instance.sendGroupedPacket(new BundlePacket());
     }
 
