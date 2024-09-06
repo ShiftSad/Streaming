@@ -11,6 +11,7 @@ import net.minestom.server.item.Material;
 import net.minestom.server.map.MapColors;
 import net.minestom.server.map.framebuffers.DirectFramebuffer;
 import net.minestom.server.map.framebuffers.LargeDirectFramebuffer;
+import net.minestom.server.network.packet.server.play.BundlePacket;
 import net.minestom.server.network.packet.server.play.MapDataPacket;
 import net.minestom.server.tag.Tag;
 
@@ -36,27 +37,24 @@ public class MapRenderer implements Renderers {
         assert width > 0 && height > 0;
         assert width % 128 == 0 && height % 128 == 0;
 
-        instance.eventNode().addListener(AddEntityToInstanceEvent.class, event -> {
-            if (event.getEntity() instanceof Player player) {
-                int i = 0;
-                for (int y = 0; y < height / 128; y++) {
-                    for (int x = 0; x < width / 128; x++) {
-                        var itemStack = ItemStack.of(Material.FILLED_MAP).builder()
-                                .set(ItemComponent.MAP_ID, id + i++)
-                                .build();
-                        player.getInventory().addItemStack(itemStack);
-                    }
-                }
+        System.out.println("width: " + width + " " + width / 128 + " " + height + " " + height / 128);
+        int maxY = height / 128 - 1;
+        for (int x = 0; x < width / 128; x++) {
+            for (int y = 0; y < height / 128; y++) {
+                // Spawn item frame
+                new ItemMapFrame(generateUniqueId(id, x, maxY - y), instance, pos.add(x, y, 0.0).asPosition());
             }
-        });
+        }
     }
 
     @Override
     public void render(BufferedImage image) {
+        // Bundle packets
+        instance.sendGroupedPacket(new BundlePacket());
+
         // Break image in 128
         BufferedImage resize = resize(image, width, height);
 
-        int i = 0;
         for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
             for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
                 var fb = new DirectFramebuffer();
@@ -72,9 +70,16 @@ public class MapRenderer implements Renderers {
                     }
                 }
 
-                MapDataPacket mapDataPacket = fb.preparePacket(id + i++);
+                MapDataPacket mapDataPacket = fb.preparePacket(generateUniqueId(id, xBlock, yBlock));
                 instance.sendGroupedPacket(mapDataPacket);
             }
         }
+
+        instance.sendGroupedPacket(new BundlePacket());
+    }
+
+    private int generateUniqueId(int baseId, int x, int y) {
+        // Generate a unique ID using a combination of baseId, x, and y
+        return baseId + (x * 1000) + y; // 1000 is an arbitrary number large enough to differentiate x and y
     }
 }

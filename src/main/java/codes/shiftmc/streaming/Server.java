@@ -51,8 +51,8 @@ public class Server {
         var map = new MapRenderer(
                 new Vec(0, 48, 0),
                 instanceContainer,
-                1080,
-                1980
+                1980,
+                1080
         );
 
         var localClient = new LocalClient(
