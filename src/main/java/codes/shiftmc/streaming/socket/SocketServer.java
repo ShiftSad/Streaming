@@ -9,21 +9,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SocketServer {
 
     private final Logger LOGGER = LoggerFactory.getLogger(SocketServer.class);
     private final SocketIOServer server;
+    private final Map<String, AtomicInteger> nameCountMap = new ConcurrentHashMap<>();
+    private final int NAME_LIMIT = 20;
 
     public SocketServer(
             String hostname,
             int port,
             BlazeNetClient blazeNetClient
     ) {
-        var start = System.currentTimeMillis();
-        AtomicInteger received = new AtomicInteger();
-
         var config = new Configuration();
         config.setHostname(hostname);
         config.setPort(port);
@@ -55,8 +59,6 @@ public class SocketServer {
                 case "blazepose" -> {
                     try {
                         var data = mapper.readValue(rawData, BlazeNetData.class);
-                        LOGGER.debug("Received data from model: {}", data.getModel());
-
                         blazeNetClient.update(data);
                     } catch (Exception e) {
                         LOGGER.error("Error while deserializing data", e);
@@ -72,6 +74,9 @@ public class SocketServer {
                 }
             }
         });
+
+        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(nameCountMap::clear, 1, 1, TimeUnit.SECONDS);
     }
 
     private String extract(String field, String json) {
