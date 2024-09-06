@@ -83,6 +83,10 @@ public class ParticleImage implements Renderers {
     }
 
     private BufferedImage resize(BufferedImage image) {
+        return resize(image, image.getWidth(), image.getHeight());
+    }
+
+    public static BufferedImage resize(BufferedImage image, int width, int height) {
         var resizedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         var graphics = resizedImage.createGraphics();
         graphics.drawImage(image, 0, 0, width, height, null);

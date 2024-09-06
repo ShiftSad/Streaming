@@ -3,6 +3,7 @@ package codes.shiftmc.streaming;
 import codes.shiftmc.streaming.client.BlazeNetClient;
 import codes.shiftmc.streaming.client.CameraClient;
 import codes.shiftmc.streaming.client.LocalClient;
+import codes.shiftmc.streaming.renderer.MapRenderer;
 import codes.shiftmc.streaming.renderer.particle.ParticleImage;
 import codes.shiftmc.streaming.socket.SocketServer;
 import net.kyori.adventure.bossbar.BossBar;
@@ -14,6 +15,7 @@ import net.minestom.server.entity.GameMode;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.server.ServerTickMonitorEvent;
+import net.minestom.server.instance.LightingChunk;
 import net.minestom.server.instance.block.Block;
 
 import java.text.DecimalFormat;
@@ -27,6 +29,7 @@ public class Server {
         var instanceContainer = instanceManager.createInstanceContainer();
 
         instanceContainer.setGenerator(unit -> unit.modifier().fillHeight(0, 42, Block.BLACK_CONCRETE));
+        instanceContainer.setChunkSupplier(LightingChunk::new);
 
         var geh = MinecraftServer.getGlobalEventHandler();
         geh.addListener(AsyncPlayerConfigurationEvent.class, event -> {
@@ -45,8 +48,15 @@ public class Server {
                 0.15f
         );
 
+        var map = new MapRenderer(
+                new Vec(0, 48, 0),
+                instanceContainer,
+                1080,
+                1980
+        );
+
         var localClient = new LocalClient(
-                particle
+                map
         );
 
         // Debug show MSPT
