@@ -9,6 +9,7 @@ import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.map.MapColors;
+import net.minestom.server.map.framebuffers.DirectFramebuffer;
 import net.minestom.server.map.framebuffers.LargeDirectFramebuffer;
 import net.minestom.server.network.packet.server.play.MapDataPacket;
 import net.minestom.server.tag.Tag;
@@ -55,20 +56,23 @@ public class MapRenderer implements Renderers {
         // Break image in 128
         BufferedImage resize = resize(image, width, height);
 
-        var fb = new LargeDirectFramebuffer(width, height);
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pixel = resize.getRGB(x, y);
-                MapColors.PreciseMapColor mappedColor = MapColors.closestColor(pixel);
-                fb.setMapColor(x, y, mappedColor.getIndex());
-            }
-        }
-
         int i = 0;
-        for (int y = 0; y < height / 128; y++) {
-            for (int x = 0; x < width / 128; x++) {
-                var smallFb = fb.createSubView(x, y);
-                MapDataPacket mapDataPacket = smallFb.preparePacket(id + i++);
+        for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
+            for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
+                var fb = new DirectFramebuffer();
+                // Loop 128x128 pixels of the image, based on the x and y locations
+                for (int yy = 0; yy < 128; yy++) {
+                    for (int xx = 0; xx < 128; xx++) {
+                        int imageX = xBlock * 128 + xx;
+                        int imageY = yBlock * 128 + yy;
+
+                        int pixel = resize.getRGB(imageX, imageY);
+                        MapColors.PreciseMapColor mappedColor = MapColors.closestColor(pixel);
+                        fb.set(xx, yy, mappedColor.getIndex());
+                    }
+                }
+
+                MapDataPacket mapDataPacket = fb.preparePacket(id + i++);
                 instance.sendGroupedPacket(mapDataPacket);
             }
         }
