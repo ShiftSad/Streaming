@@ -3,6 +3,7 @@ package codes.shiftmc.streaming;
 import codes.shiftmc.streaming.client.BlazeNetClient;
 import codes.shiftmc.streaming.client.CameraClient;
 import codes.shiftmc.streaming.client.LocalClient;
+import codes.shiftmc.streaming.client.RMTPClient;
 import codes.shiftmc.streaming.renderer.MapRenderer;
 import codes.shiftmc.streaming.renderer.particle.ParticleImage;
 import codes.shiftmc.streaming.socket.SocketServer;
@@ -39,25 +40,30 @@ public class Server {
             player.setRespawnPoint(new Pos(0, 42, 0));
         });
 
-        var particle = new ParticleImage(
-                new Vec(0, 43, 0),
-                instanceContainer,
-                82,
-                48,
-                0.5f,
-                0.15f
-        );
+//        var particle = new ParticleImage(
+//                new Vec(0, 43, 0),
+//                instanceContainer,
+//                82,
+//                48,
+//                0.5f,
+//                0.15f
+//        );
 
         var map = new MapRenderer(
                 new Vec(0, 48, 0),
                 instanceContainer,
-                1980,
-                1080
+                2048,
+                1152
         );
 
-        var localClient = new LocalClient(
-                map
-        );
+        new RMTPClient(
+                map,
+                "rtmp://177.3.74.79:1935/banana"
+        ).start();
+
+//        var localClient = new LocalClient(
+//                map
+//        );
 
         // Debug show MSPT
         BossBar bossBar = BossBar.bossBar(Component.empty(), 1f, BossBar.Color.GREEN, BossBar.Overlay.PROGRESS);

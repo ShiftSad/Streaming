@@ -39,11 +39,17 @@ public class MapRenderer implements Renderers {
         }
     }
 
-    int limit = 0;
+    private long lastFrameTime = 0;
 
     @Override
     public void render(BufferedImage image) {
-        if (limit++ % 20 != 0) return; // Limit framerate
+        long currentTime = System.currentTimeMillis();
+        int targetFps = 20;
+        long frameDuration = 1000 / targetFps;
+        if (currentTime - lastFrameTime < frameDuration) return; // Skip the frame it is to soon
+
+        lastFrameTime = currentTime;
+
         instance.sendGroupedPacket(new BundlePacket());
 
         // Break image in 128

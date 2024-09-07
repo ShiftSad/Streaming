@@ -27,7 +27,7 @@ public class LocalClient implements Clients {
             var bounds = screenDevice.getDefaultConfiguration().getBounds();
             var rectangle = new Rectangle(bounds);
 
-            scheduler.scheduleAtFixedRate(() -> frame(robot, rectangle), 0, 100, TimeUnit.MILLISECONDS);
+            scheduler.scheduleAtFixedRate(() -> frame(robot, rectangle), 0, 50, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             e.printStackTrace();
         }

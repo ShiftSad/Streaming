@@ -23,7 +23,7 @@ public class CameraClient implements Clients {
 
     @Override
     public void start() {
-        var grabber = new OpenCVFrameGrabber(1); // 1 for next camera
+        var grabber = new OpenCVFrameGrabber(0); // 1 for next camera
         var converter = new OpenCVFrameConverter.ToIplImage();
 
         try {
