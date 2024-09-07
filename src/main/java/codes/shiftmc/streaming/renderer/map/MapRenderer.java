@@ -1,5 +1,6 @@
-package codes.shiftmc.streaming.renderer;
+package codes.shiftmc.streaming.renderer.map;
 
+import codes.shiftmc.streaming.renderer.Renderers;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.map.MapColors;

@@ -1,4 +1,4 @@
-package codes.shiftmc.streaming.renderer;
+package codes.shiftmc.streaming.renderer.map;
 
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;

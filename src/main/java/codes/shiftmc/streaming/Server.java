@@ -1,12 +1,7 @@
 package codes.shiftmc.streaming;
 
-import codes.shiftmc.streaming.client.BlazeNetClient;
-import codes.shiftmc.streaming.client.CameraClient;
-import codes.shiftmc.streaming.client.LocalClient;
 import codes.shiftmc.streaming.client.RMTPClient;
-import codes.shiftmc.streaming.renderer.MapRenderer;
-import codes.shiftmc.streaming.renderer.particle.ParticleImage;
-import codes.shiftmc.streaming.socket.SocketServer;
+import codes.shiftmc.streaming.renderer.map.MapRenderer;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
