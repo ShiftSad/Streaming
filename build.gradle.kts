@@ -21,7 +21,7 @@ tasks {
     named<ShadowJar>("shadowJar") {
         archiveBaseName.set("shadow")
         mergeServiceFiles()
-        minimize()
+//        minimize()
         manifest {
             attributes["Main-Class"] = "codes.shiftmc.streaming.Server"
         }
