@@ -45,8 +45,8 @@ public class MapRenderer implements Renderers {
     @Override
     public void render(BufferedImage image) {
         long currentTime = System.currentTimeMillis();
-        int targetFps = 20;
-        long frameDuration = 1000 / targetFps;
+        float targetFps = 20;
+        float frameDuration = 1000 / targetFps;
         if (currentTime - lastFrameTime < frameDuration) return; // Skip the frame it is to soon
 
         lastFrameTime = currentTime;
