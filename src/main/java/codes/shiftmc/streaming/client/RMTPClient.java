@@ -24,7 +24,7 @@ public class RMTPClient implements Clients {
     private final int[] videoBuffer;
 
     public RMTPClient(Renderers renderers, String rmtpUrl) {
-        this.mediaPlayerFactory = new MediaPlayerFactory();
+        this.mediaPlayerFactory = new MediaPlayerFactory("--no-audio");
         this.mediaPlayer = mediaPlayerFactory.mediaPlayers().newEmbeddedMediaPlayer();
 
 
@@ -44,7 +44,6 @@ public class RMTPClient implements Clients {
                 BufferedImage image = new BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB);
                 image.setRGB(0, 0, 1920, 1080, buffer, 0, 1920);
 
-                // Process the BufferedImage (render it, analyze it, etc.)
                 renderers.render(image);
             }
         };
@@ -53,8 +52,6 @@ public class RMTPClient implements Clients {
         VideoSurface videoSurface = getVideoSurface(renderCallback);
         mediaPlayer.videoSurface().set(videoSurface);
         mediaPlayer.videoSurface().attachVideoSurface();
-
-        mediaPlayer.audio().mute();
     }
 
     private @NotNull VideoSurface getVideoSurface(RenderCallbackAdapter renderCallback) {
@@ -65,9 +62,7 @@ public class RMTPClient implements Clients {
             }
 
             @Override
-            public void allocatedBuffers(ByteBuffer[] buffers) {
-                // You can implement buffer allocation logic here if needed
-            }
+            public void allocatedBuffers(ByteBuffer[] buffers) {}
         };
 
         return mediaPlayerFactory.videoSurfaces().newVideoSurface(bufferFormatCallback, renderCallback, true);
