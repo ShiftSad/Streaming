@@ -53,12 +53,8 @@ public class Server {
 
         new RMTPClient(
                 map,
-                "rtmp://177.3.74.79:1935/banana"
+                ""
         ).start();
-
-//        var localClient = new LocalClient(
-//                map
-//        );
 
         // Debug show MSPT
         BossBar bossBar = BossBar.bossBar(Component.empty(), 1f, BossBar.Color.GREEN, BossBar.Overlay.PROGRESS);
@@ -71,16 +67,14 @@ public class Server {
             );
             bossBar.progress(Math.min((float)tickTime / (float)MinecraftServer.TICK_MS, 1f));
 
-            if (tickTime > MinecraftServer.TICK_MS)
-                bossBar.color(BossBar.Color.RED);
+            if (tickTime > MinecraftServer.TICK_MS) bossBar.color(BossBar.Color.RED);
             else bossBar.color(BossBar.Color.GREEN);
-
         });
 
         MinecraftServer.getGlobalEventHandler().addListener(PlayerSpawnEvent.class, e -> {
             e.getPlayer().showBossBar(bossBar);
         });
 
-        server.start("0.0.0.0", 25565);
+        server.start("0.0.0.0", 3131);
     }
 }

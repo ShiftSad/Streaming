@@ -19,6 +19,9 @@ public class RMTPClient implements Clients {
     private final Renderers renderers;
     private final String rmtpUrl;
 
+    private RenderCallbackAdapter renderCallback;
+    private BufferFormatCallback bufferCallback;
+
     private final MediaPlayerFactory mediaPlayerFactory;
     private final EmbeddedMediaPlayer mediaPlayer;
     private final int[] videoBuffer;
@@ -26,7 +29,6 @@ public class RMTPClient implements Clients {
     public RMTPClient(Renderers renderers, String rmtpUrl) {
         this.mediaPlayerFactory = new MediaPlayerFactory("--no-audio");
         this.mediaPlayer = mediaPlayerFactory.mediaPlayers().newEmbeddedMediaPlayer();
-
 
         this.renderers = renderers;
         this.rmtpUrl = rmtpUrl;
@@ -37,7 +39,7 @@ public class RMTPClient implements Clients {
 
     private void setupVideoSurface() {
         // Create a render callback adapter using the buffer
-        RenderCallbackAdapter renderCallback = new RenderCallbackAdapter(videoBuffer) {
+        renderCallback = new RenderCallbackAdapter(videoBuffer) {
             @Override
             protected void onDisplay(MediaPlayer mediaPlayer, int[] buffer) {
                 // Convert the raw RGB data to a BufferedImage
@@ -55,7 +57,7 @@ public class RMTPClient implements Clients {
     }
 
     private @NotNull VideoSurface getVideoSurface(RenderCallbackAdapter renderCallback) {
-        BufferFormatCallback bufferFormatCallback = new BufferFormatCallback() {
+        bufferCallback = new BufferFormatCallback() {
             @Override
             public BufferFormat getBufferFormat(int sourceWidth, int sourceHeight) {
                 return new RV32BufferFormat(1920, 1080);
@@ -65,7 +67,7 @@ public class RMTPClient implements Clients {
             public void allocatedBuffers(ByteBuffer[] buffers) {}
         };
 
-        return mediaPlayerFactory.videoSurfaces().newVideoSurface(bufferFormatCallback, renderCallback, true);
+        return mediaPlayerFactory.videoSurfaces().newVideoSurface(bufferCallback, renderCallback, true);
     }
 
     @Override
