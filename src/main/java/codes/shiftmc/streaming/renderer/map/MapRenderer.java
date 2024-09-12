@@ -14,21 +14,29 @@ import static codes.shiftmc.streaming.renderer.particle.ParticleImage.resize;
 
 public class MapRenderer implements Renderers {
 
-    private final Vec pos;
     private final Instance instance;
     private final int width;
     private final int height;
+    private final float frameRate;
+    private final float similarity;
 
     private final int id = Math.toIntExact(System.currentTimeMillis() % Integer.MAX_VALUE);
 
-    public MapRenderer(Vec pos, Instance instance, int width, int height) {
-        this.pos = pos;
+    private final BufferedImage[][] lastFrameBlocks;
+
+    public MapRenderer(Vec pos, Instance instance, int width, int height, float frameRate, float similarity) {
         this.instance = instance;
         this.width = width;
         this.height = height;
+        this.frameRate = frameRate;
+        this.similarity = similarity;
 
         assert width > 0 && height > 0;
         assert width % 128 == 0 && height % 128 == 0;
+
+        int numBlocksX = width / 128;
+        int numBlocksY = height / 128;
+        lastFrameBlocks = new BufferedImage[numBlocksX][numBlocksY]; // Ensure initialization
 
         System.out.println("width: " + width + " " + width / 128 + " " + height + " " + height / 128);
         int maxY = height / 128 - 1;
@@ -45,19 +53,25 @@ public class MapRenderer implements Renderers {
     @Override
     public void render(BufferedImage image) {
         long currentTime = System.currentTimeMillis();
-        float targetFps = 20;
-        float frameDuration = 1000 / targetFps;
-        if (currentTime - lastFrameTime < frameDuration) return; // Skip the frame it is to soon
+        float frameDuration = 1000 / frameRate;
+        if (currentTime - lastFrameTime < frameDuration) return; // Skip the frame it is too soon
 
         lastFrameTime = currentTime;
 
         instance.sendGroupedPacket(new BundlePacket());
-
         // Break image in 128
         BufferedImage resize = resize(image, width, height);
 
         for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
             for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
+                BufferedImage currentBlock = resize.getSubimage(xBlock * 128, yBlock * 128, 128, 128);
+
+                if (lastFrameBlocks[xBlock][yBlock] != null && isSimilar(lastFrameBlocks[xBlock][yBlock], currentBlock, similarity)) {
+                    continue;
+                }
+
+                lastFrameBlocks[xBlock][yBlock] = currentBlock;
+
                 var fb = new DirectFramebuffer();
                 // Loop 128x128 pixels of the image, based on the x and y locations
                 for (int yy = 0; yy < 128; yy++) {
@@ -76,6 +90,30 @@ public class MapRenderer implements Renderers {
             }
         }
         instance.sendGroupedPacket(new BundlePacket());
+    }
+
+    private boolean isSimilar(BufferedImage img1, BufferedImage img2, float threshold) {
+        if (img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight()) {
+            return false;
+        }
+
+        int width = img1.getWidth();
+        int height = img1.getHeight();
+        long diffCount = 0;
+        long totalPixels = (long) width * height;
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int rgb1 = img1.getRGB(x, y);
+                int rgb2 = img2.getRGB(x, y);
+                if (rgb1 != rgb2) {
+                    diffCount++;
+                }
+            }
+        }
+
+        float similarity = 1.0f - (diffCount / (float)totalPixels);
+        return similarity >= threshold;
     }
 
     private int generateUniqueId(int baseId, int x, int y) {
