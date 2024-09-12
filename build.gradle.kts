@@ -32,8 +32,9 @@ publishing {
     repositories {
         maven {
             name = "craftsapiens"
-            url = uri("http://http://node.craftsapiens.com.br:50021/releases")
+            url = uri("http://node.craftsapiens.com.br:50021/releases")
             credentials(PasswordCredentials::class)
+            isAllowInsecureProtocol = true
             authentication {
                 create<BasicAuthentication>("basic")
             }
