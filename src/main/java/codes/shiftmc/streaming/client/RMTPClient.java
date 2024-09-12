@@ -21,6 +21,7 @@ public class RMTPClient implements Clients {
 
     private RenderCallbackAdapter renderCallback;
     private BufferFormatCallback bufferCallback;
+    private VideoSurface videoSurface;
 
     private final MediaPlayerFactory mediaPlayerFactory;
     private final EmbeddedMediaPlayer mediaPlayer;
@@ -51,7 +52,7 @@ public class RMTPClient implements Clients {
         };
 
         // Create an anonymous inner class for BufferFormatCallback
-        VideoSurface videoSurface = getVideoSurface(renderCallback);
+        videoSurface = getVideoSurface(renderCallback);
         mediaPlayer.videoSurface().set(videoSurface);
         mediaPlayer.videoSurface().attachVideoSurface();
     }

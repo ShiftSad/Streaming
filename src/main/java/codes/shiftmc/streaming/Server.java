@@ -2,6 +2,7 @@ package codes.shiftmc.streaming;
 
 import codes.shiftmc.streaming.client.RMTPClient;
 import codes.shiftmc.streaming.renderer.map.MapRenderer;
+import com.sun.jna.NativeLibrary;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
@@ -13,12 +14,17 @@ import net.minestom.server.event.player.PlayerSpawnEvent;
 import net.minestom.server.event.server.ServerTickMonitorEvent;
 import net.minestom.server.instance.LightingChunk;
 import net.minestom.server.instance.block.Block;
+import uk.co.caprica.vlcj.binding.support.runtime.RuntimeUtil;
 
 import java.text.DecimalFormat;
 
 public class Server {
 
+    private static RMTPClient rmtpClient;
+
     public static void main(String[] args) {
+        NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), ".");
+
         var server = MinecraftServer.init();
 
         var instanceManager = MinecraftServer.getInstanceManager();
@@ -51,10 +57,11 @@ public class Server {
                 1152
         );
 
-        new RMTPClient(
+        rmtpClient = new RMTPClient(
                 map,
-                ""
-        ).start();
+                "rtmp://172.17.0.1:1935/banana"
+        );
+        rmtpClient.start();
 
         // Debug show MSPT
         BossBar bossBar = BossBar.bossBar(Component.empty(), 1f, BossBar.Color.GREEN, BossBar.Overlay.PROGRESS);
