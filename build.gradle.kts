@@ -29,24 +29,22 @@ tasks {
 
 
 publishing {
+    repositories {
+        maven {
+            name = "craftsapiens"
+            url = uri("http://http://node.craftsapiens.com.br:50021/releases")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+    }
     publications {
-        create<MavenPublication>("mavenJava") {
-            from(components["java"])
-            // Set your groupId, artifactId, and version here
+        create<MavenPublication>("maven") {
             groupId = "codes.shiftmc"
             artifactId = "streaming"
             version = "1.0.0"
-        }
-    }
-    repositories {
-        maven {
-            name = "reposilite"
-            url = uri("http://node.craftsapiens.com.br:50021/repository/maven-releases/")
-            isAllowInsecureProtocol = true
-            credentials {
-                username = System.getenv("REPOSILITE_USERNAME")
-                password = System.getenv("REPOSILITE_TOKEN")
-            }
+            from(components["java"])
         }
     }
 }
