@@ -38,7 +38,6 @@ public class MapRenderer implements Renderers {
         int numBlocksY = height / 128;
         lastFrameBlocks = new BufferedImage[numBlocksX][numBlocksY]; // Ensure initialization
 
-        System.out.println("width: " + width + " " + width / 128 + " " + height + " " + height / 128);
         int maxY = height / 128 - 1;
         for (int x = 0; x < width / 128; x++) {
             for (int y = 0; y < height / 128; y++) {
@@ -52,11 +51,13 @@ public class MapRenderer implements Renderers {
 
     @Override
     public void render(BufferedImage image) {
-        long currentTime = System.currentTimeMillis();
-        float frameDuration = 1000 / frameRate;
-        if (currentTime - lastFrameTime < frameDuration) return; // Skip the frame it is too soon
+        if (frameRate != -1) {
+            long currentTime = System.currentTimeMillis();
+            float frameDuration = 1000 / frameRate;
+            if (currentTime - lastFrameTime < frameDuration) return; // Skip the frame it is too soon
 
-        lastFrameTime = currentTime;
+            lastFrameTime = currentTime;
+        }
 
         instance.sendGroupedPacket(new BundlePacket());
         // Break image in 128
