@@ -30,7 +30,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "codes.shiftmc"
             artifactId = "streaming"
-            version = "1.0.12"
+            version = "1.0.20"
             from(components["java"])
         }
     }
