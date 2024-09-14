@@ -10,8 +10,8 @@ import net.minestom.server.network.packet.server.play.MapDataPacket;
 import net.minestom.server.timer.TaskSchedule;
 
 import java.awt.image.BufferedImage;
-import java.time.temporal.TemporalUnit;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static codes.shiftmc.streaming.renderer.particle.ParticleImage.resize;
 
@@ -21,7 +21,7 @@ public class MapRenderer implements Renderers {
     private final int width;
     private final int height;
     private final boolean bundlePacket;
-    private final boolean slowSend;
+    private boolean slowSend;
     private float frameRate;
     private float similarity;
 
@@ -29,6 +29,8 @@ public class MapRenderer implements Renderers {
 
     private final BufferedImage[][] lastFrameBlocks;
     private final ItemMapFrame[][] itemMapFrames;
+
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Create virtual thread executor
 
     public MapRenderer(Vec pos, Instance instance, int width, int height, float frameRate, float similarity, boolean bundlePacket, boolean slowSend) {
         this.instance = instance;
@@ -75,7 +77,7 @@ public class MapRenderer implements Renderers {
         // Break image in 128
         BufferedImage resize = resize(image, width, height);
         MapDataPacket[] packets = new MapDataPacket[width * height];
-        var i = 0;
+        var a = 0;
 
         for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
             for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
@@ -101,21 +103,51 @@ public class MapRenderer implements Renderers {
                 }
 
                 MapDataPacket mapDataPacket = fb.preparePacket(generateUniqueId(id, xBlock, yBlock));
-                packets[i++] = mapDataPacket;
+                packets[a++] = mapDataPacket;
             }
         }
 
-        var j = 0;
-        for (MapDataPacket packet : packets) {
+        var j = 1;
+        var executor = Executors.newVirtualThreadPerTaskExecutor(); // Create virtual thread executor
+
+        for (int i = 0; i < packets.length; i += 2) {
             if (!slowSend) {
-                instance.sendGroupedPacket(packet);
+                // Send two packets at the same time
+                instance.sendGroupedPacket(packets[i]);
+                if (i + 1 < packets.length) {
+                    instance.sendGroupedPacket(packets[i + 1]);
+                }
                 continue;
             }
 
-            instance.scheduler().scheduleTask(() -> {
-                instance.sendGroupedPacket(packet);
-                return null;
-            }, TaskSchedule.tick(j++));
+            // For slow send, use virtual threads to send two packets concurrently
+            var firstPacket = packets[i];
+            int finalJ = j;
+            if (firstPacket == null) {
+                return;
+            }
+            executor.submit(() -> {
+                instance.scheduler().scheduleTask(() -> {
+                    instance.sendGroupedPacket(firstPacket);
+                    return null;
+                }, TaskSchedule.tick(finalJ));
+            });
+
+            if (i + 1 < packets.length) {
+                var secondPacket = packets[i + 1];
+                int finalJ1 = j;
+                if (secondPacket == null) {
+                    return;
+                }
+                executor.submit(() -> {
+                    instance.scheduler().scheduleTask(() -> {
+                        instance.sendGroupedPacket(secondPacket);
+                        return null;
+                    }, TaskSchedule.tick(finalJ1));
+                });
+            }
+
+            j++;
         }
 
         if (bundlePacket) {
@@ -130,6 +162,8 @@ public class MapRenderer implements Renderers {
                 itemMapFrames[i][j] = null;
             }
         }
+
+        executor.shutdown();
     }
 
     private boolean isSimilar(BufferedImage img1, BufferedImage img2, float threshold) {
@@ -175,5 +209,13 @@ public class MapRenderer implements Renderers {
 
     public float getFrameRate() {
         return frameRate;
+    }
+
+    public void setSlowSend(boolean slowSend) {
+        this.slowSend = slowSend;
+    }
+
+    public boolean getSlowSend() {
+        return slowSend;
     }
 }
