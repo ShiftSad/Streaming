@@ -75,4 +75,10 @@ public class RTMPClient implements Clients {
     public void start() {
         mediaPlayer.media().play(rmtpUrl);
     }
+
+    public void stop() {
+        mediaPlayer.controls().stop();
+        mediaPlayer.release();
+        mediaPlayerFactory.release();
+    }
 }
