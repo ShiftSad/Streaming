@@ -14,7 +14,7 @@ import uk.co.caprica.vlcj.player.embedded.videosurface.callback.format.RV32Buffe
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
-public class RMTPClient implements Clients {
+public class RTMPClient implements Clients {
 
     private final Renderers renderers;
     private final String rmtpUrl;
@@ -27,7 +27,7 @@ public class RMTPClient implements Clients {
     private final EmbeddedMediaPlayer mediaPlayer;
     private final int[] videoBuffer;
 
-    public RMTPClient(Renderers renderers, String rmtpUrl) {
+    public RTMPClient(Renderers renderers, String rmtpUrl) {
         this.mediaPlayerFactory = new MediaPlayerFactory("--no-audio");
         this.mediaPlayer = mediaPlayerFactory.mediaPlayers().newEmbeddedMediaPlayer();
 
