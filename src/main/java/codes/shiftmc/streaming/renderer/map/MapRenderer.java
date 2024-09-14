@@ -17,8 +17,8 @@ public class MapRenderer implements Renderers {
     private final Instance instance;
     private final int width;
     private final int height;
-    private final float frameRate;
-    private final float similarity;
+    private float frameRate;
+    private float similarity;
 
     private final int id = Math.toIntExact(System.currentTimeMillis() % Integer.MAX_VALUE);
 
@@ -132,5 +132,21 @@ public class MapRenderer implements Renderers {
     private int generateUniqueId(int baseId, int x, int y) {
         // Generate a unique ID using a combination of baseId, x, and y
         return baseId + (x * 1000) + y; // 1000 is an arbitrary number large enough to differentiate x and y
+    }
+
+    public void setSimilarity(float similarity) {
+        this.similarity = similarity;
+    }
+
+    public float getSimilarity() {
+        return similarity;
+    }
+
+    public void setFrameRate(float frameRate) {
+        this.frameRate = frameRate;
+    }
+
+    public float getFrameRate() {
+        return frameRate;
     }
 }

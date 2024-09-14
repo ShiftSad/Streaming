@@ -44,7 +44,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "codes.shiftmc"
             artifactId = "streaming"
-            version = "1.0.3"
+            version = "1.0.5"
             from(components["java"])
         }
     }
