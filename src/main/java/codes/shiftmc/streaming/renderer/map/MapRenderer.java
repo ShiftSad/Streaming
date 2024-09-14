@@ -7,8 +7,11 @@ import net.minestom.server.map.MapColors;
 import net.minestom.server.map.framebuffers.DirectFramebuffer;
 import net.minestom.server.network.packet.server.play.BundlePacket;
 import net.minestom.server.network.packet.server.play.MapDataPacket;
+import net.minestom.server.timer.TaskSchedule;
 
 import java.awt.image.BufferedImage;
+import java.time.temporal.TemporalUnit;
+import java.util.concurrent.TimeUnit;
 
 import static codes.shiftmc.streaming.renderer.particle.ParticleImage.resize;
 
@@ -17,6 +20,8 @@ public class MapRenderer implements Renderers {
     private final Instance instance;
     private final int width;
     private final int height;
+    private final boolean bundlePacket;
+    private final boolean slowSend;
     private float frameRate;
     private float similarity;
 
@@ -25,10 +30,12 @@ public class MapRenderer implements Renderers {
     private final BufferedImage[][] lastFrameBlocks;
     private final ItemMapFrame[][] itemMapFrames;
 
-    public MapRenderer(Vec pos, Instance instance, int width, int height, float frameRate, float similarity) {
+    public MapRenderer(Vec pos, Instance instance, int width, int height, float frameRate, float similarity, boolean bundlePacket, boolean slowSend) {
         this.instance = instance;
         this.width = width;
         this.height = height;
+        this.bundlePacket = bundlePacket;
+        this.slowSend = slowSend;
         this.frameRate = frameRate;
         this.similarity = similarity;
 
@@ -62,9 +69,13 @@ public class MapRenderer implements Renderers {
             lastFrameTime = currentTime;
         }
 
-        instance.sendGroupedPacket(new BundlePacket());
+        if (bundlePacket) {
+            instance.sendGroupedPacket(new BundlePacket());
+        }
         // Break image in 128
         BufferedImage resize = resize(image, width, height);
+        MapDataPacket[] packets = new MapDataPacket[width * height];
+        var i = 0;
 
         for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
             for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
@@ -90,10 +101,26 @@ public class MapRenderer implements Renderers {
                 }
 
                 MapDataPacket mapDataPacket = fb.preparePacket(generateUniqueId(id, xBlock, yBlock));
-                instance.sendGroupedPacket(mapDataPacket);
+                packets[i++] = mapDataPacket;
             }
         }
-        instance.sendGroupedPacket(new BundlePacket());
+
+        var j = 0;
+        for (MapDataPacket packet : packets) {
+            if (!slowSend) {
+                instance.sendGroupedPacket(packet);
+                continue;
+            }
+
+            instance.scheduler().scheduleTask(() -> {
+                instance.sendGroupedPacket(packet);
+                return null;
+            }, TaskSchedule.tick(j++));
+        }
+
+        if (bundlePacket) {
+            instance.sendGroupedPacket(new BundlePacket());
+        }
     }
 
     public void destroy() {
