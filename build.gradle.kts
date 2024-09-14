@@ -1,7 +1,4 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-
 plugins {
-    id("io.github.goooler.shadow") version "8.1.7"
     id("java")
     `maven-publish`
 }
@@ -16,17 +13,6 @@ dependencies {
     implementation("com.corundumstudio.socketio:netty-socketio:2.0.11")
     implementation("uk.co.caprica:vlcj:4.8.3")
 }
-
-tasks {
-    named<ShadowJar>("shadowJar") {
-        archiveBaseName.set("shadow")
-        mergeServiceFiles()
-        manifest {
-            attributes["Main-Class"] = "codes.shiftmc.streaming.Server"
-        }
-    }
-}
-
 
 publishing {
     repositories {
@@ -44,7 +30,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "codes.shiftmc"
             artifactId = "streaming"
-            version = "1.0.5"
+            version = "1.0.6"
             from(components["java"])
         }
     }
