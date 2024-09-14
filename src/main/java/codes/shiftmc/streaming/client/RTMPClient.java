@@ -26,14 +26,16 @@ public class RTMPClient implements Clients {
     private final MediaPlayerFactory mediaPlayerFactory;
     private final EmbeddedMediaPlayer mediaPlayer;
     private final int[] videoBuffer;
+    private final int frameRate;
 
-    public RTMPClient(Renderers renderers, String rmtpUrl) {
+    public RTMPClient(Renderers renderers, String rmtpUrl, int frameRate) {
         this.mediaPlayerFactory = new MediaPlayerFactory("--no-audio");
         this.mediaPlayer = mediaPlayerFactory.mediaPlayers().newEmbeddedMediaPlayer();
 
         this.renderers = renderers;
         this.rmtpUrl = rmtpUrl;
         this.videoBuffer = new int[1920 * 1080];
+        this.frameRate = frameRate;
 
         setupVideoSurface();
     }
@@ -41,8 +43,17 @@ public class RTMPClient implements Clients {
     private void setupVideoSurface() {
         // Create a render callback adapter using the buffer
         renderCallback = new RenderCallbackAdapter(videoBuffer) {
+            private long lastFrameTime = 0;
             @Override
             protected void onDisplay(MediaPlayer mediaPlayer, int[] buffer) {
+                if (frameRate != -1) {
+                    long currentTime = System.currentTimeMillis();
+                    float frameDuration = (float) 1000 / frameRate;
+                    if (currentTime - lastFrameTime < frameDuration) return; // Skip the frame it is too soon
+
+                    lastFrameTime = currentTime;
+                }
+
                 // Convert the raw RGB data to a BufferedImage
                 BufferedImage image = new BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB);
                 image.setRGB(0, 0, 1920, 1080, buffer, 0, 1920);

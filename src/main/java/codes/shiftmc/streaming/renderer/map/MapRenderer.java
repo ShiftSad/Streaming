@@ -9,9 +9,8 @@ import net.minestom.server.network.packet.server.play.BundlePacket;
 import net.minestom.server.network.packet.server.play.MapDataPacket;
 
 import java.awt.image.BufferedImage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.LinkedList;
+import java.util.concurrent.*;
 
 import static codes.shiftmc.streaming.renderer.particle.ParticleImage.resize;
 
@@ -32,7 +31,7 @@ public class MapRenderer implements Renderers {
     private final BufferedImage[][] lastFrameBlocks;
     private final ItemMapFrame[][] itemMapFrames;
 
-    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor(); // Create virtual thread executor
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public MapRenderer(Vec pos, Instance instance, int width, int height, float frameRate, float similarity, boolean bundlePacket, boolean slowSend) {
         this.instance = instance;
@@ -79,9 +78,8 @@ public class MapRenderer implements Renderers {
 
         // Break image in 128
         BufferedImage resize = resize(image, width, height);
-        MapDataPacket[] packets = new MapDataPacket[width * height - 1];
+        LinkedList<MapDataPacket> packets = new LinkedList<>();
 
-        var a = 0;
         for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
             for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
                 BufferedImage currentBlock = resize.getSubimage(xBlock * 128, yBlock * 128, 128, 128);
@@ -109,12 +107,9 @@ public class MapRenderer implements Renderers {
                 }
 
                 MapDataPacket mapDataPacket = fb.preparePacket(generateUniqueId(id, xBlock, yBlock));
-                packets[a++] = mapDataPacket;
+                packets.add(mapDataPacket);
             }
         }
-
-        var j = 1;
-        var executor = Executors.newSingleThreadScheduledExecutor(); // Create virtual thread executor
 
         if (!slowSend) {
             for (MapDataPacket packet : packets) {
@@ -124,20 +119,34 @@ public class MapRenderer implements Renderers {
             return;
         }
 
-        for (int i = 0; i < packets.length; i += amount) {
-            int finalI = i;
-            executor.schedule(() -> {
-                for (int k = 0; k < amount && finalI + k < packets.length; k++) {
-                    if (packets[finalI + k] != null) {
-                        instance.sendGroupedPacket(packets[finalI + k]);
+        executor.submit(() -> {
+            try {
+                for (int i = 0; i < packets.size(); i += amount) {
+                    for (int j = 0; j < amount && (i + j) < packets.size(); j++) {
+                        if (packets.get(i + j) == null) continue;
+                        instance.sendGroupedPacket(packets.get(i + j));
+
+                        // Nullify the packet after sending it to clear memory
+                        packets.set(i + j, null);
+                    }
+
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
                 }
-            }, 50L * j++, TimeUnit.MILLISECONDS);
-        }
+            } finally {
+                // Clear any remaining references
+                packets.clear();
+                System.gc();
+            }
+        });
 
         if (bundlePacket) {
             instance.sendGroupedPacket(new BundlePacket());
         }
+
     }
 
     public void destroy() {
