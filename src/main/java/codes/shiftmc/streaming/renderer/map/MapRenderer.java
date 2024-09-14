@@ -23,6 +23,7 @@ public class MapRenderer implements Renderers {
     private final int id = Math.toIntExact(System.currentTimeMillis() % Integer.MAX_VALUE);
 
     private final BufferedImage[][] lastFrameBlocks;
+    private final ItemMapFrame[][] itemMapFrames;
 
     public MapRenderer(Vec pos, Instance instance, int width, int height, float frameRate, float similarity) {
         this.instance = instance;
@@ -38,11 +39,13 @@ public class MapRenderer implements Renderers {
         int numBlocksY = height / 128;
         lastFrameBlocks = new BufferedImage[numBlocksX][numBlocksY]; // Ensure initialization
 
+        itemMapFrames = new ItemMapFrame[numBlocksX][numBlocksY];
+
         int maxY = height / 128 - 1;
-        for (int x = 0; x < width / 128; x++) {
-            for (int y = 0; y < height / 128; y++) {
+        for (int x = 0; x < numBlocksX; x++) {
+            for (int y = 0; y < numBlocksY; y++) {
                 // Spawn item frame
-                new ItemMapFrame(generateUniqueId(id, x, maxY - y), instance, pos.add(x, y, 0.0).asPosition());
+                itemMapFrames[x][y] = new ItemMapFrame(generateUniqueId(id, x, maxY - y), instance, pos.add(x, y, 0.0).asPosition());
             }
         }
     }
@@ -91,6 +94,15 @@ public class MapRenderer implements Renderers {
             }
         }
         instance.sendGroupedPacket(new BundlePacket());
+    }
+
+    public void destroy() {
+        for (int i = 0; i < itemMapFrames.length; i++) {
+            for (int j = 0; j < itemMapFrames[i].length; j++) {
+                itemMapFrames[i][j].remove();
+                itemMapFrames[i][j] = null;
+            }
+        }
     }
 
     private boolean isSimilar(BufferedImage img1, BufferedImage img2, float threshold) {
