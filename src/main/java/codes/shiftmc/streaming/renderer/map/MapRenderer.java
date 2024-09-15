@@ -2,6 +2,8 @@ package codes.shiftmc.streaming.renderer.map;
 
 import codes.shiftmc.streaming.renderer.Renderers;
 import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.Player;
+import net.minestom.server.event.instance.AddEntityToInstanceEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.map.MapColors;
 import net.minestom.server.map.framebuffers.DirectFramebuffer;
@@ -30,6 +32,7 @@ public class MapRenderer implements Renderers {
 
     private final BufferedImage[][] lastFrameBlocks;
     private final ItemMapFrame[][] itemMapFrames;
+    private final LinkedList<MapDataPacket> packets = new LinkedList<>();
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
@@ -47,8 +50,7 @@ public class MapRenderer implements Renderers {
 
         int numBlocksX = width / 128;
         int numBlocksY = height / 128;
-        lastFrameBlocks = new BufferedImage[numBlocksX][numBlocksY]; // Ensure initialization
-
+        lastFrameBlocks = new BufferedImage[numBlocksX][numBlocksY];
         itemMapFrames = new ItemMapFrame[numBlocksX][numBlocksY];
 
         int maxY = height / 128 - 1;
@@ -58,6 +60,15 @@ public class MapRenderer implements Renderers {
                 itemMapFrames[x][y] = new ItemMapFrame(generateUniqueId(id, x, maxY - y), instance, pos.add(x, y, 0.0).asPosition());
             }
         }
+
+        instance.eventNode().addListener(AddEntityToInstanceEvent.class, event -> {
+            if (event.getEntity() instanceof Player player) {
+                for (MapDataPacket packet : packets) {
+                    if (packet == null) return;
+                    player.sendPacket(packet);
+                }
+            }
+        });
     }
 
     private long lastFrameTime = 0;
@@ -78,8 +89,8 @@ public class MapRenderer implements Renderers {
 
         // Break image in 128
         BufferedImage resize = resize(image, width, height);
-        LinkedList<MapDataPacket> packets = new LinkedList<>();
 
+        packets.clear();
         for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
             for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
                 BufferedImage currentBlock = resize.getSubimage(xBlock * 128, yBlock * 128, 128, 128);
@@ -125,9 +136,6 @@ public class MapRenderer implements Renderers {
                     for (int j = 0; j < amount && (i + j) < packets.size(); j++) {
                         if (packets.get(i + j) == null) continue;
                         instance.sendGroupedPacket(packets.get(i + j));
-
-                        // Nullify the packet after sending it to clear memory
-                        packets.set(i + j, null);
                     }
 
                     try {
@@ -138,7 +146,6 @@ public class MapRenderer implements Renderers {
                 }
             } finally {
                 // Clear any remaining references
-                packets.clear();
                 System.gc();
             }
         });
@@ -146,7 +153,6 @@ public class MapRenderer implements Renderers {
         if (bundlePacket) {
             instance.sendGroupedPacket(new BundlePacket());
         }
-
     }
 
     public void destroy() {
