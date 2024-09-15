@@ -3,6 +3,7 @@ package codes.shiftmc.streaming.renderer.map;
 import codes.shiftmc.streaming.renderer.Renderers;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.metadata.other.ItemFrameMeta;
 import net.minestom.server.event.instance.AddEntityToInstanceEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.map.MapColors;
@@ -36,7 +37,7 @@ public class MapRenderer implements Renderers {
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-    public MapRenderer(Vec pos, Instance instance, int width, int height, float frameRate, float similarity, boolean bundlePacket, boolean slowSend) {
+    public MapRenderer(Vec pos, Instance instance, ItemFrameMeta.Orientation orientation, int width, int height, float frameRate, float similarity, boolean bundlePacket, boolean slowSend) {
         this.instance = instance;
         this.width = width;
         this.height = height;
@@ -57,7 +58,7 @@ public class MapRenderer implements Renderers {
         for (int x = 0; x < numBlocksX; x++) {
             for (int y = 0; y < numBlocksY; y++) {
                 // Spawn item frame
-                itemMapFrames[x][y] = new ItemMapFrame(generateUniqueId(id, x, maxY - y), instance, pos.add(x, y, 0.0).asPosition());
+                itemMapFrames[x][y] = new ItemMapFrame(generateUniqueId(id, x, maxY - y), instance, pos.add(x, y, 0.0).asPosition(), orientation);
             }
         }
 

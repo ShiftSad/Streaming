@@ -10,7 +10,7 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 
 public class ItemMapFrame extends Entity {
-    public ItemMapFrame(int mapId, Instance instace, Pos position) {
+    public ItemMapFrame(int mapId, Instance instance, Pos position, ItemFrameMeta.Orientation orientation) {
         super(EntityType.ITEM_FRAME);
 
         var meta = (ItemFrameMeta) getEntityMeta();
@@ -21,8 +21,9 @@ public class ItemMapFrame extends Entity {
                 .build();
 
         meta.setItem(itemStack);
+        meta.setOrientation(orientation);
         meta.setNotifyAboutChanges(true);
 
-        setInstance(instace, position);
+        setInstance(instance, position);
     }
 }
