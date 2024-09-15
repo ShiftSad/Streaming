@@ -131,11 +131,12 @@ public class MapRenderer implements Renderers {
         }
 
         executor.submit(() -> {
+            var clone = new LinkedList<>(packets);
             try {
-                for (int i = 0; i < packets.size(); i += amount) {
-                    for (int j = 0; j < amount && (i + j) < packets.size(); j++) {
-                        if (packets.get(i + j) == null) continue;
-                        instance.sendGroupedPacket(packets.get(i + j));
+                for (int i = 0; i < clone.size(); i += amount) {
+                    for (int j = 0; j < amount && (i + j) < clone.size(); j++) {
+                        if (clone.get(i + j) == null) continue;
+                        instance.sendGroupedPacket(clone.get(i + j));
                     }
 
                     try {
@@ -147,6 +148,7 @@ public class MapRenderer implements Renderers {
             } finally {
                 // Clear any remaining references
                 System.gc();
+                clone.clear();
             }
         });
 
