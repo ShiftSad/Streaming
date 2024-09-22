@@ -21,9 +21,8 @@ public class ItemMapFrame extends Entity {
                 .build();
 
         meta.setItem(itemStack);
+        setInstance(instance, position);
         meta.setOrientation(orientation);
         meta.setNotifyAboutChanges(true);
-
-        setInstance(instance, position);
     }
 }

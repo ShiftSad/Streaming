@@ -1,5 +1,6 @@
 package codes.shiftmc.streaming.renderer.map;
 
+import codes.shiftmc.streaming.ImageProcessor;
 import codes.shiftmc.streaming.renderer.Renderers;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Player;
@@ -26,6 +27,7 @@ public class MapRenderer implements Renderers {
     private boolean slowSend;
     private float frameRate;
     private float similarity;
+    private boolean arbEncode;
 
     private int amount = 1;
 
@@ -37,7 +39,7 @@ public class MapRenderer implements Renderers {
 
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
-    public MapRenderer(Vec pos, Instance instance, ItemFrameMeta.Orientation orientation, int width, int height, float frameRate, float similarity, boolean bundlePacket, boolean slowSend) {
+    public MapRenderer(Vec pos, Instance instance, ItemFrameMeta.Orientation orientation, int width, int height, float frameRate, float similarity, boolean bundlePacket, boolean slowSend, boolean arbEncode) {
         this.instance = instance;
         this.width = width;
         this.height = height;
@@ -45,6 +47,7 @@ public class MapRenderer implements Renderers {
         this.slowSend = slowSend;
         this.frameRate = frameRate;
         this.similarity = similarity;
+        this.arbEncode = arbEncode;
 
         assert width > 0 && height > 0;
         assert width % 128 == 0 && height % 128 == 0;
@@ -95,6 +98,7 @@ public class MapRenderer implements Renderers {
         for (int yBlock  = 0; yBlock  < height / 128; yBlock ++) {
             for (int xBlock  = 0; xBlock  < width / 128; xBlock ++) {
                 BufferedImage currentBlock = resize.getSubimage(xBlock * 128, yBlock * 128, 128, 128);
+                if (arbEncode) currentBlock = ImageProcessor.resizeAndEncodeImage(currentBlock);
 
                 if (lastFrameBlocks[xBlock][yBlock] != null && isSimilar(lastFrameBlocks[xBlock][yBlock], currentBlock, similarity)) {
                     continue;
@@ -113,6 +117,7 @@ public class MapRenderer implements Renderers {
                         int imageY = yBlock * 128 + yy;
 
                         int pixel = resize.getRGB(imageX, imageY);
+                        if (arbEncode) pixel = currentBlock.getRGB(imageX % 128, imageY % 128);
                         MapColors.PreciseMapColor mappedColor = MapColors.closestColor(pixel);
                         fb.set(xx, yy, mappedColor.getIndex());
                     }
