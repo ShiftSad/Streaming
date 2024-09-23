@@ -27,7 +27,9 @@ public class MapRenderer implements Renderers {
     private boolean slowSend;
     private float frameRate;
     private float similarity;
-    private boolean arbEncode;
+    private final boolean arbEncode;
+
+    private boolean destroyed = false;
 
     private int amount = 1;
 
@@ -79,6 +81,8 @@ public class MapRenderer implements Renderers {
 
     @Override
     public void render(BufferedImage image) {
+        if (destroyed) return;
+
         if (frameRate != -1) {
             long currentTime = System.currentTimeMillis();
             float frameDuration = 1000 / frameRate;
@@ -178,6 +182,7 @@ public class MapRenderer implements Renderers {
             }
         }
 
+        destroyed = true;
         executor.shutdown();
     }
 
