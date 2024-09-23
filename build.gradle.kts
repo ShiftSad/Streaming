@@ -14,6 +14,11 @@ dependencies {
     implementation("uk.co.caprica:vlcj:4.8.3")
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 publishing {
     repositories {
         maven {
@@ -30,7 +35,7 @@ publishing {
         create<MavenPublication>("maven") {
             groupId = "codes.shiftmc"
             artifactId = "streaming"
-            version = "1.3.0"
+            version = "1.4.0"
             from(components["java"])
         }
     }
