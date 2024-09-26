@@ -15,14 +15,18 @@ public class ItemMapFrame extends Entity {
 
         var meta = (ItemFrameMeta) getEntityMeta();
         meta.setNotifyAboutChanges(false);
+        changeId(mapId);
+        setInstance(instance, position);
+        meta.setOrientation(orientation);
+        meta.setNotifyAboutChanges(true);
+    }
 
+    public void changeId(int mapId) {
+        var meta = (ItemFrameMeta) getEntityMeta();
         var itemStack = ItemStack.of(Material.FILLED_MAP).builder()
                 .set(ItemComponent.MAP_ID, mapId)
                 .build();
 
         meta.setItem(itemStack);
-        setInstance(instance, position);
-        meta.setOrientation(orientation);
-        meta.setNotifyAboutChanges(true);
     }
 }
