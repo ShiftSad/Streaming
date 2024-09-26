@@ -81,6 +81,10 @@ public class MapRenderer implements Renderers {
 
     @Override
     public void render(BufferedImage image) {
+        render(image, id);
+    }
+
+    public void render(BufferedImage image, int id) {
         if (destroyed) return;
 
         if (frameRate != -1) {

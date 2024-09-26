@@ -10,6 +10,7 @@ import java.util.List;
 public class ImageBundleRenderer {
 
     private final ArrayList<BufferedImage> cachedImages = new ArrayList<>();
+    private final List<MapRenderer> mapRenderers = new ArrayList<>();
 
     public ImageBundleRenderer(
             int width,
@@ -20,12 +21,16 @@ public class ImageBundleRenderer {
             boolean slowSend,
             boolean arbEncode,
             List<BufferedImage> images,
-            List<Map> maps
+            List<MapRenderer> mapRenderers
     ) {
         if (arbEncode) cachedImages.addAll(images.stream().map(ImageProcessor::resizeAndEncodeImage).toList());
         else cachedImages.addAll(images);
+        this.mapRenderers.addAll(mapRenderers);
 
+        mapRenderers.forEach(renderer -> {
+            renderer.render(cachedImages.getFirst());
 
+        });
     }
 
     public void step(int number) {
