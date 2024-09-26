@@ -1,6 +1,7 @@
 package codes.shiftmc.streaming.renderer.map;
 
 import codes.shiftmc.streaming.ImageProcessor;
+import codes.shiftmc.streaming.renderer.map.model.Map;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -18,9 +19,10 @@ public class ImageBundleRenderer {
             boolean bundlePacket,
             boolean slowSend,
             boolean arbEncode,
-            List<BufferedImage> images
+            List<BufferedImage> images,
+            List<Map> maps
     ) {
-        if (arbEncode) cachedImages.forEach(ImageProcessor::resizeAndEncodeImage);
+        if (arbEncode) cachedImages.addAll(images.stream().map(ImageProcessor::resizeAndEncodeImage).toList());
         else cachedImages.addAll(images);
 
 
