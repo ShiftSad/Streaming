@@ -214,7 +214,7 @@ public class MapRenderer implements Renderers {
         return similarity >= threshold;
     }
 
-    private int generateUniqueId(int baseId, int x, int y) {
+    public static int generateUniqueId(int baseId, int x, int y) {
         // Generate a unique ID using a combination of baseId, x, and y
         return baseId + (x * 1000) + y; // 1000 is an arbitrary number large enough to differentiate x and y
     }
@@ -257,5 +257,11 @@ public class MapRenderer implements Renderers {
 
     public int getAmount() {
         return amount;
+    }
+
+    public int getId() { return id; }
+
+    public ItemMapFrame[][] getItemMapFrames() {
+        return itemMapFrames;
     }
 }
