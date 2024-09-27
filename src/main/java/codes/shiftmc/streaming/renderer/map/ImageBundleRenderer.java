@@ -1,7 +1,5 @@
 package codes.shiftmc.streaming.renderer.map;
 
-import codes.shiftmc.streaming.ImageProcessor;
-
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +14,10 @@ public class ImageBundleRenderer {
     private int currentIndex = 0;
 
     public ImageBundleRenderer(
-            boolean arbEncode,
             List<BufferedImage> images,
             List<MapRenderer> mapRenderers
     ) {
-        if (arbEncode) cachedImages.addAll(images.stream().map(ImageProcessor::resizeAndEncodeImage).toList());
-        else cachedImages.addAll(images);
+        cachedImages.addAll(images);
         this.mapRenderers.addAll(mapRenderers);
 
         ids.add((int) System.currentTimeMillis() + 10000);
