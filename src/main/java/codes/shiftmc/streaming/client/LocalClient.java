@@ -15,7 +15,6 @@ public class LocalClient implements Clients {
 
     public LocalClient(Renderers renderer) {
         this.renderer = renderer;
-        start();
     }
 
     @Override
